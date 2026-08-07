@@ -10,10 +10,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
-fal.config({ credentials: process.env.FAL_KEY });
+const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_KEY || '');
 
-// 1. CHAT ENDPOINT - Robotik kalıplardan arındırılmış Türkçe flört
+if (process.env.FAL_KEY) {
+  fal.config({ credentials: process.env.FAL_KEY });
+}
+
+// 1. CHAT ENDPOINT
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -35,28 +38,29 @@ Asla yapay zeka olduğunu söyleme. "Hey tatlım", "biliyorsun değil mi" gibi y
 WhatsApp'tan sevgilisine mesaj atan gerçek bir Türk genci gibi konuş. Kısa, samimi, doğal ve akıcı yaz. 
 Fotoğraf istendiğinde veya ortam sorulduğunda o anki mekana uygun davran.`
           },
-          ...messages
+          ...(messages || [])
         ]
       })
     });
 
     const data = await response.json();
-    res.json({ message: data.choices[0].message.content });
+    if (data.choices && data.choices[0]) {
+      res.json({ message: data.choices[0].message.content });
+    } else {
+      res.status(500).json({ error: 'Model yanıt vermedi.' });
+    }
   } catch (error) {
     console.error('Chat hatası:', error);
     res.status(500).json({ error: 'Chat yanıtı üretilemedi.' });
   }
 });
 
-// 2. DİNAMİK & MEKANA UYGUN GERÇEKÇİ GÖRSEL ENDPOINT
+// 2. IMAGE ENDPOINT
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt, chatHistory } = req.body;
-
-    // Kullanıcının attığı son mesajı veya prompt'u mekana dönüştür
     const userContext = prompt || chatHistory || "casual portrait";
 
-    // Fotogerçekçiliği zorlayan ve plastik görünümü engelleyen profesyonel prompt
     const hyperRealisticPrompt = `An authentic amateur candid smartphone photo, shot on front-facing iPhone 15 Pro camera, Snapchat aesthetic, 8k resolution, raw photography, natural lighting, subtle skin imperfections, visible pores, no heavy makeup, realistic eyes, unedited look. Context and setting: ${userContext}. Pose: natural relaxed pose matching the environment, realistic background depth.`;
 
     const result = await fal.subscribe("fal-ai/flux/schnell", {

@@ -11,9 +11,12 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@fal-ai/serverless-client": "^0.15.0",
     "@supabase/supabase-js": "^2.112.2",
     "axios": "^1.19.0",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
   }
 }
