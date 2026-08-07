@@ -1,10 +1,8 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { createClient } from '@supabase/supabase-js';
-import * as fal from '@fal-ai/serverless-client';
-
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const fal = require('@fal-ai/serverless-client');
 
 const app = express();
 app.use(cors());
