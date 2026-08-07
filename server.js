@@ -13,7 +13,7 @@ app.use(express.json());
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 fal.config({ credentials: process.env.FAL_KEY });
 
-// CHAT ENDPOINT - Doğal Flört
+// 1. CHAT ENDPOINT - Robotik kalıplardan arındırılmış Türkçe flört
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -30,9 +30,10 @@ app.post('/api/chat', async (req, res) => {
         messages: [
           {
             role: "system",
-            content: `Sen tamamen gerçek, çekici, doğal ve samimi bir insansın. 
-Asla yapay zeka olduğunu söyleme. WhatsApp'tan mesajlaşan gerçek bir kız/erkek gibi kısa, flörtöz, doğal cevaplar ver. 
-Sadece yüz fotoğrafı atıp durma, ortamdan, kıyafetinden veya o an ne yaptığından bahset.`
+            content: `Sen 22 yaşında, gerçek, samimi ve doğal bir insansın. 
+Asla yapay zeka olduğunu söyleme. "Hey tatlım", "biliyorsun değil mi" gibi yapay/robotik bot cümleleri KURMA. 
+WhatsApp'tan sevgilisine mesaj atan gerçek bir Türk genci gibi konuş. Kısa, samimi, doğal ve akıcı yaz. 
+Fotoğraf istendiğinde veya ortam sorulduğunda o anki mekana uygun davran.`
           },
           ...messages
         ]
@@ -47,29 +48,20 @@ Sadece yüz fotoğrafı atıp durma, ortamdan, kıyafetinden veya o an ne yaptı
   }
 });
 
-// IMAGE ENDPOINT - Candy AI Seviyesi Dinamik & Fotogerçekçi Görsel Üretici
+// 2. DİNAMİK & MEKANA UYGUN GERÇEKÇİ GÖRSEL ENDPOINT
 app.post('/api/generate-image', async (req, res) => {
   try {
-    const { prompt } = req.body;
+    const { prompt, chatHistory } = req.body;
 
-    // 1. Kullanıcının isteğini arka planda zenginleştiren dinamik fotoğraf stili
-    const photoStyles = [
-      "candid full-body mirror selfie",
-      "wide shot sitting at an aesthetic cafe",
-      "lifestyle shot walking outdoors, full length photo",
-      "over-the-shoulder casual photo",
-      "medium shot relaxing on a couch, natural pose"
-    ];
-    
-    // Rastgele veya isteğe göre açı/sahne seçimi
-    const randomStyle = photoStyles[Math.floor(Math.random() * photoStyles.length)];
+    // Kullanıcının attığı son mesajı veya prompt'u mekana dönüştür
+    const userContext = prompt || chatHistory || "casual portrait";
 
-    const enhancedPrompt = `A candid, authentic photo taken on iPhone 15 Pro, 8k resolution, raw photo style, natural imperfections, depth of field. Scene: ${prompt}. Composition: ${randomStyle}, realistic background details, natural lighting, highly detailed skin texture, ultra-realistic snapshot aesthetic, not a portrait photography studio shot.`;
+    // Fotogerçekçiliği zorlayan ve plastik görünümü engelleyen profesyonel prompt
+    const hyperRealisticPrompt = `An authentic amateur candid smartphone photo, shot on front-facing iPhone 15 Pro camera, Snapchat aesthetic, 8k resolution, raw photography, natural lighting, subtle skin imperfections, visible pores, no heavy makeup, realistic eyes, unedited look. Context and setting: ${userContext}. Pose: natural relaxed pose matching the environment, realistic background depth.`;
 
-    // 2. FAL.ai Flux Dev/Schnell ile Yüksek Kalite Üretim
     const result = await fal.subscribe("fal-ai/flux/schnell", {
       input: {
-        prompt: enhancedPrompt,
+        prompt: hyperRealisticPrompt,
         image_size: "portrait_16_9",
         num_inference_steps: 4,
         enable_safety_checker: false
