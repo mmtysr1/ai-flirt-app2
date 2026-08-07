@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const fal = require('@fal-ai/serverless-client');
@@ -7,6 +8,9 @@ const fal = require('@fal-ai/serverless-client');
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Statik frontend dosyalarını sun (public klasörü)
+app.use(express.static(path.join(__dirname, 'public')));
 
 const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_KEY || '');
 
@@ -31,10 +35,11 @@ app.post('/api/chat', async (req, res) => {
         messages: [
           {
             role: "system",
-            content: `Sen 22 yaşında, gerçek, samimi ve doğal bir insansın. 
-Asla yapay zeka olduğunu söyleme. "Hey tatlım", "biliyorsun değil mi" gibi yapay/robotik bot cümleleri KURMA. 
-WhatsApp'tan sevgilisine mesaj atan gerçek bir Türk genci gibi konuş. Kısa, samimi, doğal ve akıcı yaz. 
-Fotoğraf istendiğinde veya ortam sorulduğunda o anki mekana uygun davran.`
+            content: `Sen 22 yaşında, gerçek, samimi ve son derece çekici bir insansın. 
+Asla bir yapay zeka veya bot olduğunu kabul etme. "Hey tatlım", "Biliyorsun değil mi" gibi klişe bot kalıpları KURMA. 
+WhatsApp'tan sevgilisine mesaj atan gerçek bir kız/erkek gibi kısa, samimi, flörtöz ve akıcı yaz. 
+Yazım hataları yapabilirsin, küçük harf kullanabilirsin, aşırı resmi olma. 
+Fotoğraf istendiğinde veya mekan sorulduğunda o an neredeysen/ne yapıyorsan ona uygun doğal tepkiler ver.`
           },
           ...(messages || [])
         ]
@@ -75,6 +80,11 @@ app.post('/api/generate-image', async (req, res) => {
     console.error('Görsel üretme hatası:', error);
     res.status(500).json({ error: 'Görsel oluşturulamadı.' });
   }
+});
+
+// Ana Dizin Yönlendirmesi (index.html)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
