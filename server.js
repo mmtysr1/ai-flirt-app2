@@ -10,11 +10,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Supabase & Fal Yapılandırması
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 fal.config({ credentials: process.env.FAL_KEY });
 
-// 1. CHAT ENDPOINT - Doğal & Gerçekçi Flört Modeli
+// CHAT ENDPOINT - Doğal Flört
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -26,16 +25,14 @@ app.post('/api/chat', async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gryphe/mythomax-l2-13b", // Flört ve insanımsı rol yapmada en başarılı model
-        temperature: 0.85, // Gerçekçi ve samimi tepki oranı
+        model: "gryphe/mythomax-l2-13b",
+        temperature: 0.85,
         messages: [
           {
             role: "system",
             content: `Sen tamamen gerçek, çekici, doğal ve samimi bir insansın. 
-Asla bir yapay zeka veya bot olduğunu kabul etme. 
-Resmi, uzun, ezberlenmiş ya da yapay cümleler KURMA. 
-WhatsApp'tan mesajlaşan gerçek bir kız/erkek gibi kısa, flörtöz, doğal, anlık tepkiler ver. 
-Yazım hataları yapabilirsin, küçük harfler kullanabilirsin, samimi ve doğal ol.`
+Asla yapay zeka olduğunu söyleme. WhatsApp'tan mesajlaşan gerçek bir kız/erkek gibi kısa, flörtöz, doğal cevaplar ver. 
+Sadece yüz fotoğrafı atıp durma, ortamdan, kıyafetinden veya o an ne yaptığından bahset.`
           },
           ...messages
         ]
@@ -50,14 +47,26 @@ Yazım hataları yapabilirsin, küçük harfler kullanabilirsin, samimi ve doğa
   }
 });
 
-// 2. IMAGE ENDPOINT - Candy AI Ayarında Fotogerçekçi Görsel Üretimi
+// IMAGE ENDPOINT - Candy AI Seviyesi Dinamik & Fotogerçekçi Görsel Üretici
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    // Görseli gerçekçi kılacak teknik Flux promptu
-    const enhancedPrompt = `Hyper-realistic candid photo, 8k resolution, raw photo, realistic skin texture, highly detailed features, natural soft lighting, instagram aesthetic, shot on 35mm lens, portrait of an attractive person: ${prompt}`;
+    // 1. Kullanıcının isteğini arka planda zenginleştiren dinamik fotoğraf stili
+    const photoStyles = [
+      "candid full-body mirror selfie",
+      "wide shot sitting at an aesthetic cafe",
+      "lifestyle shot walking outdoors, full length photo",
+      "over-the-shoulder casual photo",
+      "medium shot relaxing on a couch, natural pose"
+    ];
+    
+    // Rastgele veya isteğe göre açı/sahne seçimi
+    const randomStyle = photoStyles[Math.floor(Math.random() * photoStyles.length)];
 
+    const enhancedPrompt = `A candid, authentic photo taken on iPhone 15 Pro, 8k resolution, raw photo style, natural imperfections, depth of field. Scene: ${prompt}. Composition: ${randomStyle}, realistic background details, natural lighting, highly detailed skin texture, ultra-realistic snapshot aesthetic, not a portrait photography studio shot.`;
+
+    // 2. FAL.ai Flux Dev/Schnell ile Yüksek Kalite Üretim
     const result = await fal.subscribe("fal-ai/flux/schnell", {
       input: {
         prompt: enhancedPrompt,
