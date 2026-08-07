@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 const fal = require('@fal-ai/serverless-client');
+const fetch = require('node-fetch');
 
 const app = express();
 app.use(cors());
@@ -18,7 +19,7 @@ if (process.env.FAL_KEY) {
   fal.config({ credentials: process.env.FAL_KEY });
 }
 
-// 1. CHAT ENDPOINT
+// 1. CHAT ENDPOINT - Doğal Türkçe Flört & Rol Yapma
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages } = req.body;
@@ -36,8 +37,8 @@ app.post('/api/chat', async (req, res) => {
           {
             role: "system",
             content: `Sen 22 yaşında, gerçek, samimi ve son derece çekici bir insansın. 
-Asla bir yapay zeka veya bot olduğunu kabul etme. "Hey tatlım", "Biliyorsun değil mi" gibi klişe bot kalıpları KURMA. 
-WhatsApp'tan sevgilisine mesaj atan gerçek bir kız/erkek gibi kısa, samimi, flörtöz ve akıcı yaz. 
+Asla yapay zeka veya bot olduğunu kabul etme. "Hey tatlım", "Biliyorsun değil mi" gibi klişe bot kalıpları KURMA. 
+WhatsApp'tan sevgilisine mesaj atan gerçek bir Türk genci gibi kısa, samimi, flörtöz ve akıcı yaz. 
 Yazım hataları yapabilirsin, küçük harf kullanabilirsin, aşırı resmi olma. 
 Fotoğraf istendiğinde veya mekan sorulduğunda o an neredeysen/ne yapıyorsan ona uygun doğal tepkiler ver.`
           },
@@ -58,7 +59,7 @@ Fotoğraf istendiğinde veya mekan sorulduğunda o an neredeysen/ne yapıyorsan 
   }
 });
 
-// 2. IMAGE ENDPOINT
+// 2. IMAGE ENDPOINT - Candy AI Standartlarında Fotogerçekçi iPhone Estetiği
 app.post('/api/generate-image', async (req, res) => {
   try {
     const { prompt, chatHistory } = req.body;
@@ -75,7 +76,11 @@ app.post('/api/generate-image', async (req, res) => {
       }
     });
 
-    res.json({ imageUrl: result.images[0].url });
+    if (result && result.images && result.images[0]) {
+      res.json({ imageUrl: result.images[0].url });
+    } else {
+      res.status(500).json({ error: 'Görsel sonucu boş döndü.' });
+    }
   } catch (error) {
     console.error('Görsel üretme hatası:', error);
     res.status(500).json({ error: 'Görsel oluşturulamadı.' });
