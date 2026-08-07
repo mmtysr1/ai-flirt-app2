@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Flört & Partner Platformu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .tab-active { color: #f43f5e; border-color: #f43f5e; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-100 bg-slate-950 w-full relative">
+
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-purple-600 flex items-center justify-center font-black text-white text-base shadow-lg shadow-rose-500/20">
+                <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+            <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-rose-400 to-purple-400 bg-clip-text text-transparent">AI Flört Platformu</span>
+        </div>
+        
+        <nav class="hidden md:flex items-center space-x-6 text-sm font-semibold text-slate-400">
+            <button onclick="showSection('chat')" id="web-nav-chat" class="hover:text-rose-400 transition tab-active py-1 border-b-2">Sohbetler</button>
+            <button onclick="showSection('create')" id="web-nav-create" class="hover:text-rose-400 transition py-1 border-b-2 border-transparent">Gelişmiş Model Tasarla</button>
+            <button onclick="showSection('generate')" id="web-nav-generate" class="hover:text-rose-400 transition py-1 border-b-2 border-transparent">Görsel & Galeri</button>
+        </nav>
+
+        <button onclick="showSection('credits')" class="bg-slate-800 border border-slate-700/80 px-4 py-2 rounded-full flex items-center space-x-2.5 hover:border-amber-400/50 transition">
+            <i class="fa-solid fa-coins text-amber-400 text-sm"></i>
+            <span id="credit-count" class="text-sm font-bold text-amber-300">50</span>
+            <span class="text-xs bg-rose-500/20 text-rose-400 font-semibold px-2 py-0.5 rounded-full">+ Yükle</span>
+        </button>
+    </header>
+
+    <main class="flex-1 overflow-y-auto pb-20 md:pb-6 relative max-w-7xl w-full mx-auto px-4 md:px-8 py-6">
+
+        <!-- SOHBET LİSTESİ -->
+        <section id="sec-chat" class="space-y-4">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-200">Partnerlerin</h2>
+                    <p class="text-xs text-slate-400">Özel hafızalı sanal modellerinle iletişime geç.</p>
+                </div>
+                <button onclick="showSection('create')" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-lg transition">
+                    <i class="fa-solid fa-plus"></i> Yeni Model Tasarla
+                </button>
+            </div>
+
+            <div id="character-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </section>
+
+        <!-- SOHBET PENCERESİ -->
+        <section id="chat-window" class="hidden fixed inset-0 bg-slate-950 z-[60] flex flex-col h-full max-w-5xl mx-auto md:my-6 md:h-[calc(100vh-3rem)] md:rounded-3xl md:border md:border-slate-800 md:shadow-2xl overflow-hidden">
+            <div class="bg-slate-900 p-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button onclick="closeChat()" class="text-slate-400 hover:text-white p-2 rounded-xl bg-slate-800/50"><i class="fa-solid fa-chevron-left text-lg"></i></button>
+                    <img id="chat-avatar" class="w-11 h-11 rounded-full object-cover border-2 border-rose-500">
+                    <div>
+                        <h3 id="chat-name" class="font-bold text-base text-slate-100"></h3>
+                        <p id="chat-role" class="text-xs text-rose-400 font-medium"></p>
+                    </div>
+                </div>
+                <button onclick="requestPhotoInChat()" class="bg-rose-500/10 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-500/20 transition">
+                    <i class="fa-solid fa-camera"></i> Gerçekçi Foto İste (10 Cr)
+                </button>
+            </div>
+
+            <div id="message-list" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+
+            <div class="p-4 bg-slate-900 border-t border-slate-800 flex items-center space-x-3 sticky bottom-0">
+                <input id="chat-input" type="text" placeholder="Mesajını yaz..." class="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-5 py-3.5 text-sm text-white focus:outline-none focus:border-rose-500 transition" onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button onclick="sendMessage()" class="bg-gradient-to-r from-rose-500 to-purple-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-95 hover:opacity-90 transition">
+                    <i class="fa-solid fa-paper-plane text-sm"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- GELİŞMİŞ MODEL TASARIMCISI -->
+        <section id="sec-create" class="hidden max-w-2xl mx-auto space-y-6 bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-800">
+            <div>
+                <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2"><i class="fa-solid fa-sliders text-rose-500"></i> Gelişmiş Model Tasarımcısı</h2>
+                <p class="text-xs text-slate-400 mt-1">Karakterin fiziksel özellikleri, yaşı ve ilişki durumunu detaylandırın.</p>
+            </div>
+            <form onsubmit="event.preventDefault(); saveCharacter();" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-2">Model Adı</label>
+                        <input id="new-name" type="text" placeholder="Örn: Melisa" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-2">Yaş</label>
+                        <input id="new-age" type="number" placeholder="22" value="22" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-2">Kişilik / Rol</label>
+                        <select id="new-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option>Flörtöz & Romantik</option>
+                            <option>Kıskanç & Dominant</option>
+                            <option>Utangaç & Tatlı</option>
+                            <option>Eğlenceli & Çılgın</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-300 block mb-2">İlişki Durumu</label>
+                        <select id="new-rel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                            <option>Sevgili</option>
+                            <option>Flört</option>
+                            <option>Gizli Aşık</option>
+                            <option>Arkadaş</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-2">Fiziksel Görünüm & Tarz (İngilizce yazılması gerçekçiliği artırır)</label>
+                    <input id="new-appearance" type="text" placeholder="Örn: 22 years old, blonde hair, blue eyes, casual style, realistic portrait" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-rose-500">
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-purple-600 font-bold text-sm py-3.5 rounded-xl shadow-lg active:scale-95 hover:opacity-90 transition">
+                    Modeli Oluştur ve Kaydet
+                </button>
+            </form>
+        </section>
+
+        <!-- GÖRSEL ÜRETİMİ -->
+        <section id="sec-generate" class="hidden max-w-2xl mx-auto space-y-6 bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-800">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2"><i class="fa-solid fa-wand-magic-sparkles text-rose-500"></i> Fal.ai Ultra Gerçekçi Görsel Motoru</h2>
+                    <p class="text-xs text-slate-400 mt-1">Yüksek kaliteli fotoğraf ve portreler oluşturun.</p>
+                </div>
+                <span class="text-xs bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full font-bold">10 Kredi</span>
+            </div>
+            <textarea id="gen-prompt" rows="3" placeholder="Örn: 23 years old Turkish girl sitting in a coffee shop, candid photo, soft sunlight..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-rose-500"></textarea>
+            <button onclick="triggerImageGen()" class="w-full bg-gradient-to-r from-rose-500 to-purple-600 font-bold text-sm py-3.5 rounded-xl shadow-lg active:scale-95 hover:opacity-90 transition">
+                <i class="fa-solid fa-bolt"></i> Fotoğraf Oluştur (10 Kredi)
+            </button>
+            <div id="gen-result" class="hidden border border-slate-800 bg-slate-950 p-3 rounded-2xl text-center">
+                <img id="gen-img" class="w-full max-h-[500px] object-contain rounded-xl mx-auto">
+            </div>
+        </section>
+
+        <!-- KREDİ PAKETLERİ -->
+        <section id="sec-credits" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="text-center">
+                <h2 class="text-xl font-bold text-slate-100">Kredi Bakiye Paketleri</h2>
+                <p class="text-xs text-slate-400 mt-1">Görsel isteme ve ek sohbet kredisi satın alın.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div onclick="buyCredits(100)" class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center space-y-3 cursor-pointer hover:border-amber-400/50 transition">
+                    <i class="fa-solid fa-coins text-amber-400 text-3xl"></i>
+                    <div class="font-black text-xl text-white">100 Kredi</div>
+                    <div class="bg-amber-400/10 text-amber-300 font-bold text-sm py-2 rounded-xl">₺49.99</div>
+                </div>
+                <div onclick="buyCredits(300)" class="bg-slate-900 border border-rose-500/50 p-6 rounded-3xl text-center space-y-3 cursor-pointer hover:border-rose-500 transition shadow-lg shadow-rose-500/10">
+                    <i class="fa-solid fa-fire text-rose-500 text-3xl"></i>
+                    <div class="font-black text-xl text-white">300 Kredi</div>
+                    <div class="bg-rose-500 text-white font-bold text-sm py-2 rounded-xl">₺119.99</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="md:hidden bg-slate-900/95 border-t border-slate-800 fixed bottom-0 left-0 right-0 flex items-center justify-around py-3 z-50">
+        <button onclick="showSection('chat')" id="nav-chat" class="flex flex-col items-center space-y-1 tab-active"><i class="fa-solid fa-comments text-lg"></i><span class="text-[10px]">Sohbet</span></button>
+        <button onclick="showSection('create')" id="nav-create" class="flex flex-col items-center space-y-1 text-slate-500"><i class="fa-solid fa-wand-magic-sparkles text-lg"></i><span class="text-[10px]">Model Oluştur</span></button>
+        <button onclick="showSection('generate')" id="nav-generate" class="flex flex-col items-center space-y-1 text-slate-500"><i class="fa-solid fa-image text-lg"></i><span class="text-[10px]">Görsel Üret</span></button>
+        <button onclick="showSection('credits')" id="nav-credits" class="flex flex-col items-center space-y-1 text-slate-500"><i class="fa-solid fa-coins text-lg"></i><span class="text-[10px]">Kredi</span></button>
+    </nav>
+
+    <script>
+        let currentUser = null;
+        let activeCharacter = null;
+
+        async function initApp() {
+            const res = await fetch('/api/init-user');
+            const data = await res.json();
+            if (data.success) {
+                currentUser = data.user;
+                document.getElementById('credit-count').innerText = currentUser.credits;
+                renderCharacters(data.characters);
+            }
+        }
+
+        function renderCharacters(characters) {
+            const list = document.getElementById('character-list');
+            list.innerHTML = characters.map(c => `
+                <div onclick='openChat(${JSON.stringify(c)})' class="bg-slate-900 border border-slate-800 hover:border-rose-500/50 p-4 rounded-2xl flex items-center space-x-4 cursor-pointer active:scale-95 hover:-translate-y-1 transition">
+                    <div class="relative">
+                        <img src="${c.avatar_url}" class="w-16 h-16 rounded-2xl object-cover border-2 border-rose-500 shadow-lg">
+                        <span class="w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 rounded-full absolute -bottom-1 -right-1"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="font-bold text-base text-slate-100 truncate">${c.name} <span class="text-xs text-slate-400">(${c.age || 22})</span></h3>
+                            <span class="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">Çevrimiçi</span>
+                        </div>
+                        <p class="text-xs text-rose-400 font-medium">${c.personality}</p>
+                        <p class="text-[11px] text-slate-500 truncate">${c.relationship_status || 'Flört'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showSection(sId) {
+            ['chat', 'create', 'generate', 'credits'].forEach(s => {
+                document.getElementById('sec-' + s).classList.add('hidden');
+                const mobNav = document.getElementById('nav-' + s);
+                if(mobNav) { mobNav.classList.remove('tab-active'); mobNav.classList.add('text-slate-500'); }
+                const webNav = document.getElementById('web-nav-' + s);
+                if(webNav) { webNav.classList.remove('tab-active'); webNav.classList.add('border-transparent'); }
+            });
+
+            document.getElementById('sec-' + sId).classList.remove('hidden');
+            const activeMob = document.getElementById('nav-' + sId);
+            if(activeMob) { activeMob.classList.add('tab-active'); activeMob.classList.remove('text-slate-500'); }
+            const activeWeb = document.getElementById('web-nav-' + sId);
+            if(activeWeb) { activeWeb.classList.add('tab-active'); activeWeb.classList.remove('border-transparent'); }
+
+            if(sId !== 'chat') closeChat();
+        }
+
+        async function openChat(character) {
+            activeCharacter = character;
+            document.getElementById('chat-name').innerText = `${character.name} (${character.age || 22})`;
+            document.getElementById('chat-role').innerText = `${character.personality} • ${character.relationship_status || 'Partner'}`;
+            document.getElementById('chat-avatar').src = character.avatar_url;
+            document.getElementById('chat-window').classList.remove('hidden');
+
+            const msgList = document.getElementById('message-list');
+            msgList.innerHTML = '<div class="text-center text-xs text-slate-500">Mesaj geçmişi yükleniyor...</div>';
+            
+            if (character.id) {
+                const res = await fetch(`/api/messages/${character.id}`);
+                const data = await res.json();
+                msgList.innerHTML = '';
+                if (data.success && data.messages.length > 0) {
+                    data.messages.forEach(m => {
+                        const isUser = m.sender === 'user';
+                        msgList.innerHTML += `<div class="flex justify-${isUser ? 'end' : 'start'}"><div class="${isUser ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white' : 'bg-slate-900 border border-slate-800 text-slate-200'} text-xs md:text-sm p-3.5 rounded-2xl rounded-tr-none max-w-[80%] shadow">${m.content}</div></div>`;
+                    });
+                } else {
+                    msgList.innerHTML = `<div class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none max-w-[80%] shadow">Selam! Bugün benimle nasıl bir vakit geçirmek istersin? ✨</div></div>`;
+                }
+            }
+            msgList.scrollTop = msgList.scrollHeight;
+        }
+
+        function closeChat() { document.getElementById('chat-window').classList.add('hidden'); }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text || !activeCharacter) return;
+
+            const msgList = document.getElementById('message-list');
+            msgList.innerHTML += `<div class="flex justify-end"><div class="bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs md:text-sm p-3.5 rounded-2xl rounded-tr-none max-w-[80%] shadow">${text}</div></div>`;
+            input.value = '';
+            msgList.scrollTop = msgList.scrollHeight;
+
+            const loadingId = 'loading-' + Date.now();
+            msgList.innerHTML += `<div id="${loadingId}" class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-400 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none animate-pulse">Yazıyor...</div></div>`;
+            msgList.scrollTop = msgList.scrollHeight;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        userMessage: text,
+                        characterId: activeCharacter.id,
+                        character: activeCharacter
+                    })
+                });
+                const data = await res.json();
+                document.getElementById(loadingId).remove();
+                msgList.innerHTML += `<div class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none max-w-[80%] shadow">${data.reply}</div></div>`;
+            } catch(e) {
+                document.getElementById(loadingId).remove();
+                msgList.innerHTML += `<div class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none max-w-[80%] shadow">Seni dinliyorum hayatım... 🔥</div></div>`;
+            }
+            msgList.scrollTop = msgList.scrollHeight;
+        }
+
+        async function requestPhotoInChat() {
+            if(!activeCharacter) return;
+            if(currentUser && currentUser.credits < 10) { alert('Yetersiz kredi!'); showSection('credits'); return; }
+            if(currentUser) currentUser.credits -= 10;
+            document.getElementById('credit-count').innerText = currentUser ? currentUser.credits : 40;
+
+            const msgList = document.getElementById('message-list');
+            msgList.innerHTML += `<div class="flex justify-end"><div class="bg-gradient-to-r from-rose-500 to-purple-600 text-white text-xs md:text-sm p-3.5 rounded-2xl rounded-tr-none max-w-[80%] shadow">Bana bir fotoğrafını atar mısın? 📸</div></div>`;
+            
+            const loadingId = 'loading-' + Date.now();
+            msgList.innerHTML += `<div id="${loadingId}" class="flex justify-start"><div class="bg-slate-900 border border-slate-800 text-slate-400 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none animate-pulse">Fotoğraf hazırlanıyor... 📸</div></div>`;
+            msgList.scrollTop = msgList.scrollHeight;
+
+            let recentMessages = [];
+            try {
+                const msgRes = await fetch(`/api/messages/${activeCharacter.id}`);
+                const msgData = await msgRes.json();
+                if(msgData.success) recentMessages = msgData.messages;
+            } catch(e) {}
+
+            try {
+                const res = await fetch('/api/generate-image', { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ 
+                        characterAppearance: activeCharacter.appearance,
+                        faceUrl: activeCharacter.avatar_url,
+                        lastMessages: recentMessages
+                    })
+                });
+                const data = await res.json();
+                document.getElementById(loadingId).remove();
+
+                msgList.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-slate-900 border border-slate-800 text-slate-200 text-xs md:text-sm p-3.5 rounded-2xl rounded-tl-none max-w-[80%] shadow space-y-2">
+                            <p>Senin için bir fotoğraf çektim, nasıl buldun? 🔥</p>
+                            <img src="${data.imageUrl}" class="w-full max-h-80 object-cover rounded-xl border border-slate-800 shadow-xl">
+                        </div>
+                    </div>
+                `;
+            } catch(e) {
+                document.getElementById(loadingId).remove();
+                alert("Fotoğraf üretilemedi.");
+            }
+            msgList.scrollTop = msgList.scrollHeight;
+        }
+
+        async function saveCharacter() {
+            const name = document.getElementById('new-name').value;
+            const age = document.getElementById('new-age').value;
+            const role = document.getElementById('new-role').value;
+            const rel = document.getElementById('new-rel').value;
+            const appearance = document.getElementById('new-appearance').value;
+            
+            const res = await fetch('/api/characters', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id, name, age, personality: role, relationshipStatus: rel, appearance })
+            });
+            const data = await res.json();
+            if(data.success) {
+                showSection('chat');
+                initApp();
+            }
+        }
+
+        async function triggerImageGen() {
+            if(currentUser && currentUser.credits < 10) { alert('Yetersiz kredi!'); showSection('credits'); return; }
+            if(currentUser) currentUser.credits -= 10;
+            document.getElementById('credit-count').innerText = currentUser ? currentUser.credits : 40;
+
+            const userPrompt = document.getElementById('gen-prompt').value.trim();
+            document.getElementById('gen-result').classList.remove('hidden');
+            document.getElementById('gen-img').src = 'https://i.gifer.com/ZZ5H.gif';
+
+            try {
+                const res = await fetch('/api/generate-image', { 
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ prompt: userPrompt })
+                });
+                const data = await res.json();
+                document.getElementById('gen-img').src = data.imageUrl;
+            } catch(e) {
+                alert("Görsel üretilemedi, tekrar deneyin.");
+            }
+        }
+
+        function buyCredits(amount) {
+            if(currentUser) currentUser.credits += amount;
+            document.getElementById('credit-count').innerText = currentUser ? currentUser.credits : 50;
+            alert(`${amount} Kredi yüklendi!`);
+            showSection('chat');
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
